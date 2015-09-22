@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:FormsEx="clr-namespace:Xamarin.FormsEx;assembly=Xamarin.FormsEx"
+    x:Class="SampleApp.FlyoutSamplePage">
+	
+    <RelativeLayout
+        BackgroundColor="#FFCC99">
+        
+        <StackLayout
+            RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=1}">
+            <Button
+                HorizontalOptions="Center"
+                Text="Run"
+                TextColor="Black"
+                Clicked="OnButtonClicked"/>
+        </StackLayout>
+
+        <Grid
+            x:Name="_top"
+            FormsEx:Flyout.Position="Top"
+            RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=-0.8}"
+            RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=1}"
+            RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.8}"
+            RowSpacing="0">
+            <Grid.RowDefinitions>
+                <RowDefinition 
+                    Height="*" />
+                <RowDefinition 
+                    Height="2" />
+                <RowDefinition 
+                    Height="2" />
+                <RowDefinition 
+                    Height="2" />
+                <RowDefinition 
+                    Height="2" />
+            </Grid.RowDefinitions>
+            <BoxView
+                Grid.Row="0"
+                BackgroundColor="#F6F6F6" />
+            <BoxView
+                Grid.Row="1"
+                BackgroundColor="#77000000" />
+            <BoxView
+                Grid.Row="2"
+                BackgroundColor="#55000000" />
+            <BoxView
+                Grid.Row="3"
+                BackgroundColor="#33000000" />
+            <BoxView
+                Grid.Row="4"
+                BackgroundColor="#11000000" />
+        </Grid>
+        
+        <Grid
+            x:Name="_left"
+            FormsEx:Flyout.Position="Left"
+            RelativeLayout.XConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=-0.8}"
+            RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.8}"
+            RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=1}"
+            ColumnSpacing="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition 
+                    Width="*" />
+                <ColumnDefinition 
+                    Width="2" />
+                <ColumnDefinition 
+                    Width="2" />
+                <ColumnDefinition 
+                    Width="2" />
+                <ColumnDefinition 
+                    Width="2" />
+            </Grid.ColumnDefinitions>
+            <BoxView
+                Grid.Column="0"
+                BackgroundColor="#F6F6F6" />
+            <BoxView
+                Grid.Column="1"
+                BackgroundColor="#77000000" />
+            <BoxView
+                Grid.Column="2"
+                BackgroundColor="#55000000" />
+            <BoxView
+                Grid.Column="3"
+                BackgroundColor="#33000000" />
+            <BoxView
+                Grid.Column="4"
+                BackgroundColor="#11000000" />
+        </Grid>
+
+        <Grid
+            x:Name="_bottom"
+            FormsEx:Flyout.Position="Bottom"
+            RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=1}"
+            RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=1}"
+            RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.4}"
+            RowSpacing="0">
+            <Grid.RowDefinitions>
+                <RowDefinition 
+                    Height="2" />
+                <RowDefinition 
+                    Height="2" />
+                <RowDefinition 
+                    Height="2" />
+                <RowDefinition 
+                    Height="2" />
+                <RowDefinition 
+                    Height="*" />
+            </Grid.RowDefinitions>
+            <BoxView
+                Grid.Row="0"
+                BackgroundColor="#11000000" />
+            <BoxView
+                Grid.Row="1"
+                BackgroundColor="#33000000" />
+            <BoxView
+                Grid.Row="2"
+                BackgroundColor="#55000000" />
+            <BoxView
+                Grid.Row="3"
+                BackgroundColor="#77000000" />
+            <BoxView
+                Grid.Row="4"
+                BackgroundColor="#F6F6F6" />
+        </Grid>
+
+        <Grid
+            x:Name="_right"
+            FormsEx:Flyout.Position="Right"
+            RelativeLayout.XConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=1}"
+            RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=1}"
+            ColumnSpacing="0"
+            WidthRequest="200">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition 
+                    Width="2" />
+                <ColumnDefinition 
+                    Width="2" />
+                <ColumnDefinition 
+                    Width="2" />
+                <ColumnDefinition 
+                    Width="2" />
+                <ColumnDefinition 
+                    Width="*" />
+            </Grid.ColumnDefinitions>
+            <BoxView
+                Grid.Column="0"
+                BackgroundColor="#11000000" />
+            <BoxView
+                Grid.Column="1"
+                BackgroundColor="#33000000" />
+            <BoxView
+                Grid.Column="2"
+                BackgroundColor="#55000000" />
+            <BoxView
+                Grid.Column="3"
+                BackgroundColor="#77000000" />
+            <BoxView
+                Grid.Column="4"
+                BackgroundColor="#F6F6F6" />
+        </Grid>
+
+    </RelativeLayout>
+    
+</ContentPage>
