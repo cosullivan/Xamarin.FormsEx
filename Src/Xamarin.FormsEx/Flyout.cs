@@ -16,6 +16,12 @@ namespace Xamarin.FormsEx
             BindableProperty.CreateAttached<Flyout, FlyoutPosition>(
                 bindable => Flyout.GetPosition(bindable), FlyoutPosition.Left);
 
+        static readonly BindablePropertyKey IsShowingPropertyKey =
+            BindableProperty.CreateAttachedReadOnly<Flyout, bool>(
+                bindable => Flyout.GetIsShowing(bindable), false);
+
+        public static readonly BindableProperty IsShowingProperty = IsShowingPropertyKey.BindableProperty;
+
         static readonly BindablePropertyKey StatePropertyKey =
             BindableProperty.CreateAttachedReadOnly<Flyout, Stack<Point>>(
                 bindable => Flyout.GetState(bindable), null, defaultValueCreator: CreateDefaultStateValue);
@@ -43,6 +49,36 @@ namespace Xamarin.FormsEx
             }
 
             return (FlyoutPosition)bindableObject.GetValue(PositionProperty);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether or not the flyout is showing.
+        /// </summary>
+        /// <param name="bindableObject">The bindable object to get the position for.</param>
+        /// <returns>The value that represents whether flyout is currently showing.</returns>
+        public static bool GetIsShowing(BindableObject bindableObject)
+        {
+            if (bindableObject == null)
+            {
+                throw new ArgumentNullException(nameof(bindableObject));
+            }
+
+            return (bool)bindableObject.GetValue(PositionProperty);
+        }
+
+        /// <summary>
+        /// Sets a value indicating whether or not the flyout is currently shoing.
+        /// </summary>
+        /// <param name="bindableObject">The bindable object to set the value on.</param>
+        /// <param name="isShowing">A value indicating whether or not the flyout is showing.</param>
+        internal static void SetIsShowing(BindableObject bindableObject, bool isShowing)
+        {
+            if (bindableObject == null)
+            {
+                throw new ArgumentNullException(nameof(bindableObject));
+            }
+
+            bindableObject.SetValue(IsShowingPropertyKey, isShowing);
         }
 
         /// <summary>
@@ -97,6 +133,7 @@ namespace Xamarin.FormsEx
             }
 
             Flyout.GetState(element).Push(new Point(element.TranslationX, element.TranslationY));
+            Flyout.SetIsShowing(element, true);
 
             switch (Flyout.GetPosition(element))
             {
@@ -185,14 +222,18 @@ namespace Xamarin.FormsEx
                 throw new ArgumentNullException(nameof(element));
             }
 
-            if (Flyout.GetState(element).Count == 0)
+            var state = Flyout.GetState(element);
+            Flyout.SetIsShowing(element, state.Count > 1);
+
+            if (state.Count == 0)
             {
                 return Task.FromResult(0);
             }
 
-            var state = Flyout.GetState(element).Pop();
+            var top = state.Pop();
+            Flyout.SetIsShowing(element, state.Count > 0);
 
-            return AnimateTranslationAsync(element, state.X, state.Y, length);
+            return AnimateTranslationAsync(element, top.X, top.Y, length);
         }
 
         /// <summary>
@@ -214,6 +255,7 @@ namespace Xamarin.FormsEx
             }
 
             Flyout.GetState(element).Clear();
+            Flyout.SetIsShowing(element, false);
 
             return AnimateTranslationAsync(element, 0, 0, length);
         }
