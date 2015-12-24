@@ -6,7 +6,7 @@ namespace SampleApp
     {
         public App()
         {
-            MainPage = new FlyoutSamplePage();
+            MainPage = new FlyoutPinnedSamplePage();
         }
     }
 }

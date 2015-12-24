@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Xamarin.Forms;
 using Xamarin.FormsEx;
 
 namespace SampleApp
@@ -57,7 +58,7 @@ namespace SampleApp
             await Task.Delay(500);
 
             await _right.BackAsync();
-            
+
             _right.WidthRequest = width;
         }
     }

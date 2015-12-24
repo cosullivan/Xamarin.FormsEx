@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
@@ -24,16 +25,50 @@ namespace Xamarin.FormsEx
 
         static readonly BindablePropertyKey StatePropertyKey =
             BindableProperty.CreateAttachedReadOnly<Flyout, Stack<Point>>(
-                bindable => Flyout.GetState(bindable), null, defaultValueCreator: CreateDefaultStateValue);
+                bindable => Flyout.GetState(bindable), null, defaultValueCreator: CreateInstance<Stack<Point>>);
+
+        static readonly BindablePropertyKey PinnedPropertyKey =
+            BindableProperty.CreateAttachedReadOnly<Flyout, List<VisualElement>>(
+                bindable => Flyout.GetPinned(bindable), null, defaultValueCreator: CreateInstance<List<VisualElement>>);
+
+        public static readonly BindableProperty PinToProperty =
+            BindableProperty.CreateAttached<Flyout, VisualElement>(
+                bindable => Flyout.GetPinTo(bindable), null, propertyChanged: OnPinToChanged);
 
         /// <summary>
-        /// Create a default instance to hold the state for the bindable object.
+        /// Called when the PinTo value changes.
+        /// </summary>
+        /// <param name="bindable">The instance that the has had its value set.</param>
+        /// <param name="oldValue">The old value.</param>
+        /// <param name="newValue">The new value.</param>
+        static void OnPinToChanged(BindableObject bindable, VisualElement oldValue, VisualElement newValue)
+        {
+            var element = bindable as VisualElement;
+
+            if (element == null)
+            {
+                return;
+            }
+
+            if (oldValue != null)
+            {
+                GetPinned(oldValue).Remove(element);
+            }
+
+            if (newValue != null)
+            {
+                GetPinned(newValue).Add(element);
+            }
+        }
+
+        /// <summary>
+        /// Create a default instance for the bindable object.
         /// </summary>
         /// <param name="bindableObject">The bindable object to create the default instance for.</param>
         /// <returns>The default instance to use for the bindable object.</returns>
-        static Stack<Point> CreateDefaultStateValue(BindableObject bindableObject)
+        static T CreateInstance<T>(BindableObject bindableObject) where T : new()
         {
-            return new Stack<Point>();
+            return new T();
         }
 
         /// <summary>
@@ -52,6 +87,21 @@ namespace Xamarin.FormsEx
         }
 
         /// <summary>
+        /// Gets the element that the instance is pinned to.
+        /// </summary>
+        /// <param name="bindableObject">The bindable object to get the pin target for.</param>
+        /// <returns>The element that the instance is pinned to.</returns>
+        public static VisualElement GetPinTo(BindableObject bindableObject)
+        {
+            if (bindableObject == null)
+            {
+                throw new ArgumentNullException(nameof(bindableObject));
+            }
+
+            return (VisualElement)bindableObject.GetValue(PinToProperty);
+        }
+
+        /// <summary>
         /// Gets a value indicating whether or not the flyout is showing.
         /// </summary>
         /// <param name="bindableObject">The bindable object to get the position for.</param>
@@ -63,7 +113,7 @@ namespace Xamarin.FormsEx
                 throw new ArgumentNullException(nameof(bindableObject));
             }
 
-            return (bool)bindableObject.GetValue(PositionProperty);
+            return (bool)bindableObject.GetValue(IsShowingProperty);
         }
 
         /// <summary>
@@ -94,6 +144,21 @@ namespace Xamarin.FormsEx
             }
 
             return (Stack<Point>)bindableObject.GetValue(StatePropertyKey.BindableProperty);
+        }
+
+        /// <summary>
+        /// Gets the list of pinned elements for the bindable object.
+        /// </summary>
+        /// <param name="bindableObject">The bindable object to get the list of pinned elements.</param>
+        /// <returns>The list of pinned elements of the bindable object.</returns>
+        internal static List<VisualElement> GetPinned(BindableObject bindableObject)
+        {
+            if (bindableObject == null)
+            {
+                throw new ArgumentNullException(nameof(bindableObject));
+            }
+
+            return (List<VisualElement>)bindableObject.GetValue(PinnedPropertyKey.BindableProperty);
         }
     }
 
@@ -259,7 +324,7 @@ namespace Xamarin.FormsEx
 
             return AnimateTranslationAsync(element, 0, 0, length);
         }
-
+        
         /// <summary>
         /// Perform a flyout on a horizontal basis.
         /// </summary>
@@ -269,6 +334,23 @@ namespace Xamarin.FormsEx
         /// <param name="length">The speed in which to perform the animation for the flyout.</param>
         /// <returns>A task which asynchronously performs the operation.</returns>
         static Task AnimateTranslationAsync(VisualElement element, double translationX, double translationY, uint length)
+        {
+            var elements = Flyout.GetPinned(element).Union(new[] { element });
+
+            var tasks = elements.Select(e => ExecuteTranslationAsync(e, translationX, translationY, length));
+
+            return Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Perform a flyout on a horizontal basis.
+        /// </summary>
+        /// <param name="element">The element to perform the flyout for.</param>
+        /// <param name="translationX">The translation amount to animate on the X scale.</param>
+        /// <param name="translationY">The translation amount to animate on the Y scale.</param>
+        /// <param name="length">The speed in which to perform the animation for the flyout.</param>
+        /// <returns>A task which asynchronously performs the operation.</returns>
+        static Task ExecuteTranslationAsync(VisualElement element, double translationX, double translationY, uint length)
         {
             if (Math.Abs(element.TranslationX - translationX) < Double.Epsilon && Math.Abs(element.TranslationY - translationY) < Double.Epsilon)
             {

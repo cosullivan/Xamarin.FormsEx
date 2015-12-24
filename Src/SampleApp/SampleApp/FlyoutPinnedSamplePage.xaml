@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:FormsEx="clr-namespace:Xamarin.FormsEx;assembly=Xamarin.FormsEx"
+    x:Class="SampleApp.FlyoutPinnedSamplePage">
+
+    <RelativeLayout
+        BackgroundColor="#FFCC99">
+
+        <StackLayout
+            RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=1}">
+            <Button
+                HorizontalOptions="Center"
+                Text="Up"
+                TextColor="Black"
+                Clicked="OnUpButtonClicked"/>
+            <Button
+               HorizontalOptions="Center"
+               Text="Down"
+               TextColor="Black"
+               Clicked="OnDownButtonClicked"/>
+        </StackLayout>
+
+        <BoxView
+            RelativeLayout.XConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.5, Constant=-25}"
+            RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=1, Constant=-100}"
+            FormsEx:Flyout.PinTo="{x:Reference _bottom}"
+            WidthRequest="50"
+            HeightRequest="50"
+            BackgroundColor="Red" />
+
+        <Grid
+            x:Name="_bottom"
+            FormsEx:Flyout.Position="Bottom"
+            RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=1}"
+            RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=1}"
+            RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.4}"
+            RowSpacing="0">
+            <Grid.RowDefinitions>
+                <RowDefinition
+                    Height="2" />
+                <RowDefinition
+                    Height="2" />
+                <RowDefinition
+                    Height="2" />
+                <RowDefinition
+                    Height="2" />
+                <RowDefinition
+                    Height="*" />
+            </Grid.RowDefinitions>
+            <BoxView
+                Grid.Row="0"
+                BackgroundColor="#11000000" />
+            <BoxView
+                Grid.Row="1"
+                BackgroundColor="#33000000" />
+            <BoxView
+                Grid.Row="2"
+                BackgroundColor="#55000000" />
+            <BoxView
+                Grid.Row="3"
+                BackgroundColor="#77000000" />
+            <BoxView
+                Grid.Row="4"
+                BackgroundColor="#F6F6F6" />
+        </Grid>
+
+    </RelativeLayout>
+
+</ContentPage>

@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage 
+<ContentPage
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:FormsEx="clr-namespace:Xamarin.FormsEx;assembly=Xamarin.FormsEx"
     x:Class="SampleApp.FlyoutSamplePage">
-	
+
     <RelativeLayout
         BackgroundColor="#FFCC99">
-        
+
         <StackLayout
             RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=1}">
             <Button
@@ -25,15 +25,15 @@
             RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.8}"
             RowSpacing="0">
             <Grid.RowDefinitions>
-                <RowDefinition 
+                <RowDefinition
                     Height="*" />
-                <RowDefinition 
+                <RowDefinition
                     Height="2" />
-                <RowDefinition 
+                <RowDefinition
                     Height="2" />
-                <RowDefinition 
+                <RowDefinition
                     Height="2" />
-                <RowDefinition 
+                <RowDefinition
                     Height="2" />
             </Grid.RowDefinitions>
             <BoxView
@@ -52,7 +52,7 @@
                 Grid.Row="4"
                 BackgroundColor="#11000000" />
         </Grid>
-        
+
         <Grid
             x:Name="_left"
             FormsEx:Flyout.Position="Left"
@@ -61,15 +61,15 @@
             RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=1}"
             ColumnSpacing="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition 
+                <ColumnDefinition
                     Width="*" />
-                <ColumnDefinition 
+                <ColumnDefinition
                     Width="2" />
-                <ColumnDefinition 
+                <ColumnDefinition
                     Width="2" />
-                <ColumnDefinition 
+                <ColumnDefinition
                     Width="2" />
-                <ColumnDefinition 
+                <ColumnDefinition
                     Width="2" />
             </Grid.ColumnDefinitions>
             <BoxView
@@ -97,15 +97,15 @@
             RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.4}"
             RowSpacing="0">
             <Grid.RowDefinitions>
-                <RowDefinition 
+                <RowDefinition
                     Height="2" />
-                <RowDefinition 
+                <RowDefinition
                     Height="2" />
-                <RowDefinition 
+                <RowDefinition
                     Height="2" />
-                <RowDefinition 
+                <RowDefinition
                     Height="2" />
-                <RowDefinition 
+                <RowDefinition
                     Height="*" />
             </Grid.RowDefinitions>
             <BoxView
@@ -133,15 +133,15 @@
             ColumnSpacing="0"
             WidthRequest="200">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition 
+                <ColumnDefinition
                     Width="2" />
-                <ColumnDefinition 
+                <ColumnDefinition
                     Width="2" />
-                <ColumnDefinition 
+                <ColumnDefinition
                     Width="2" />
-                <ColumnDefinition 
+                <ColumnDefinition
                     Width="2" />
-                <ColumnDefinition 
+                <ColumnDefinition
                     Width="*" />
             </Grid.ColumnDefinitions>
             <BoxView
@@ -162,5 +162,5 @@
         </Grid>
 
     </RelativeLayout>
-    
+
 </ContentPage>
