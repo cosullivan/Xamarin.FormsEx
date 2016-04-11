@@ -188,9 +188,24 @@ namespace Xamarin.FormsEx
         /// Perform the flyout for the element.
         /// </summary>
         /// <param name="element">The element to perform the flyout for.</param>
+        /// <returns>A task which asynchronously performs the operation.</returns>
+        public static Task FlyoutAsync(this VisualElement element)
+        {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
+            return FlyoutAsync(element, Flyout.Normal);
+        }
+
+        /// <summary>
+        /// Perform the flyout for the element.
+        /// </summary>
+        /// <param name="element">The element to perform the flyout for.</param>
         /// <param name="length">The speed in which to perform the animation for the flyout.</param>
         /// <returns>A task which asynchronously performs the operation.</returns>
-        public static Task FlyoutAsync(this VisualElement element, uint length = Flyout.Normal)
+        public static Task FlyoutAsync(this VisualElement element, uint length)
         {
             if (element == null)
             {
@@ -278,9 +293,24 @@ namespace Xamarin.FormsEx
         /// Move the flyout back to the previous position.
         /// </summary>
         /// <param name="element">The element to move back on.</param>
+        /// <returns>A task which asynchronously performs the operation.</returns>
+        public static Task BackAsync(this VisualElement element)
+        {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
+            return BackAsync(element, Flyout.Normal);
+        }
+
+        /// <summary>
+        /// Move the flyout back to the previous position.
+        /// </summary>
+        /// <param name="element">The element to move back on.</param>
         /// <param name="length">The speed in which to perform the animation.</param>
         /// <returns>A task which asynchronously performs the operation.</returns>
-        public static Task BackAsync(this VisualElement element, uint length = Flyout.Normal)
+        public static Task BackAsync(this VisualElement element, uint length)
         {
             if (element == null)
             {
@@ -305,9 +335,24 @@ namespace Xamarin.FormsEx
         /// Move the flyout back to the previous position.
         /// </summary>
         /// <param name="element">The element to move back on.</param>
+        /// <returns>A task which asynchronously performs the operation.</returns>
+        public static Task CloseFlyoutAsync(this VisualElement element)
+        {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
+            return CloseFlyoutAsync(element, Flyout.Normal);
+        }
+
+        /// <summary>
+        /// Move the flyout back to the previous position.
+        /// </summary>
+        /// <param name="element">The element to move back on.</param>
         /// <param name="length">The speed in which to perform the animation.</param>
         /// <returns>A task which asynchronously performs the operation.</returns>
-        public static Task CloseFlyoutAsync(this VisualElement element, uint length = Flyout.Normal)
+        public static Task CloseFlyoutAsync(this VisualElement element, uint length)
         {
             if (element == null)
             {
