@@ -14,25 +14,26 @@
                 HorizontalOptions="Center"
                 Text="Up"
                 TextColor="Black"
-                Clicked="OnUpButtonClicked"/>
+                Clicked="OnUpButtonClicked" />
             <Button
                HorizontalOptions="Center"
                Text="Down"
                TextColor="Black"
-               Clicked="OnDownButtonClicked"/>
+               Clicked="OnDownButtonClicked" />
         </StackLayout>
 
         <BoxView
             RelativeLayout.XConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=0.5, Constant=-25}"
             RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=1, Constant=-100}"
-            FormsEx:Flyout.PinTo="{x:Reference _bottom}"
+            FormsEx:Flyout.PinTo="{x:Reference _bottom1}"
             WidthRequest="50"
             HeightRequest="50"
             BackgroundColor="Red" />
 
         <Grid
-            x:Name="_bottom"
+            x:Name="_bottom1"
             FormsEx:Flyout.Position="Bottom"
+            FormsEx:Flyout.PinTo="{x:Reference _bottom2}"
             RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=1}"
             RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=1}"
             RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.4}"
@@ -65,6 +66,15 @@
                 Grid.Row="4"
                 BackgroundColor="#F6F6F6" />
         </Grid>
+
+        <StackLayout
+            x:Name="_bottom2"
+            FormsEx:Flyout.Position="Bottom"
+            RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=1}"
+            RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=1}"
+            HeightRequest="100"
+            BackgroundColor="Red">
+        </StackLayout>
 
     </RelativeLayout>
 
