@@ -13,7 +13,13 @@ namespace SampleApp
 
         async void OnUpButtonClicked(object sender, EventArgs e)
         {
-            await _bottom1.FlyoutAsync();
+            if (Math.Abs(_bottom1.TranslationY) < Double.Epsilon)
+            {
+                await _bottom1.FlyoutAsync();
+                return;
+            }
+
+            await _bottom2.FlyoutAsync();
 
             //if (Flyout.GetIsShowing(_bottom1) == false)
             //{

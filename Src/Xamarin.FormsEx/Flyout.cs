@@ -14,14 +14,14 @@ namespace Xamarin.FormsEx
         public const uint Slow = 1000;
 
         public static readonly BindableProperty PositionProperty =
-            BindableProperty.Create(
+            BindableProperty.CreateAttached(
                 "Position",
                 typeof (FlyoutPosition),
                 typeof (Flyout),
                 FlyoutPosition.Left);
 
         public static readonly BindableProperty PinToProperty =
-            BindableProperty.Create(
+            BindableProperty.CreateAttached(
                 "PinTo",
                 typeof (VisualElement),
                 typeof (Flyout),
@@ -36,6 +36,13 @@ namespace Xamarin.FormsEx
                 null);
 
         public static readonly BindableProperty PinnedProperty = PinnedPropertyKey.BindableProperty;
+
+        //static readonly BindablePropertyKey LayoutOperationPropertyKey =
+        //    BindableProperty.CreateAttachedReadOnly(
+        //        "LayoutOperation",
+        //        typeof (LayoutOperation),
+        //        typeof (Flyout),
+        //        null);
 
         /// <summary>
         /// Called when the PinTo value changes.
@@ -131,6 +138,36 @@ namespace Xamarin.FormsEx
 
             return (VisualElement) bindableObject.GetValue(PinToProperty);
         }
+
+        ///// <summary>
+        ///// Gets the current layout operation that has been applied to the element.
+        ///// </summary>
+        ///// <param name="bindableObject">The bindable object to get the pin target for.</param>
+        ///// <returns>The layout operation that is currently applied to the given element..</returns>
+        //internal static LayoutOperation GetLayoutOperation(BindableObject bindableObject)
+        //{
+        //    if (bindableObject == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(bindableObject));
+        //    }
+
+        //    return bindableObject.GetValue(LayoutOperationPropertyKey.BindableProperty) as LayoutOperation;
+        //}
+
+        ///// <summary>
+        ///// Sets the layout operation for the given element.
+        ///// </summary>
+        ///// <param name="bindableObject">The bindable object to set the layout operation on.</param>
+        ///// <param name="layoutOperation">The layout operation to set on the element.</param>
+        //internal static void SetLayoutOperation(BindableObject bindableObject, LayoutOperation layoutOperation)
+        //{
+        //    if (bindableObject == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(bindableObject));
+        //    }
+
+        //    bindableObject.SetValue(LayoutOperationPropertyKey, layoutOperation);
+        //}
     }
 
     public static class FlyoutExtensions
@@ -202,6 +239,39 @@ namespace Xamarin.FormsEx
         }
 
         /// <summary>
+        /// Returns all the elements that will be affected by a layout operation on the given root element.
+        /// </summary>
+        /// <param name="rootElement">The root element to determine the pinned hierarchy from.</param>
+        /// <returns>The list of visual elements that will be affectect by a layout to the root element.</returns>
+        static IEnumerable<VisualElement> CalculateAffectedElements(VisualElement rootElement)
+        {
+            var hash = new HashSet<VisualElement>();
+
+            CalculateAffectedElements(rootElement, hash);
+
+            return hash;
+        }
+
+        /// <summary>
+        /// Adds the effected elements to the given hash.
+        /// </summary>
+        /// <param name="rootElement">The root element to add the effected elements to.</param>
+        /// <param name="hash">The hash to track the visitation of the elements.</param>
+        static void CalculateAffectedElements(VisualElement rootElement, HashSet<VisualElement> hash)
+        {
+            foreach (var element in Flyout.GetPinned(rootElement))
+            {
+                if (hash.Contains(element))
+                {
+                    continue;
+                }
+
+                hash.Add(element);
+                CalculateAffectedElements(element, hash);
+            }
+        }
+
+        /// <summary>
         /// Perform a Flyout in an Up direction.
         /// </summary>
         /// <param name="layout">The parent layout to perform the flyout relative to.</param>
@@ -212,10 +282,17 @@ namespace Xamarin.FormsEx
         {
             var translationY = element.Bounds.Height - (layout.Bounds.Bottom - element.Bounds.Y);
 
-            var operation = new LayoutOperation(element, LayoutDirection.Vertical, -translationY, Flyout.GetPinned(element).ToList());
+            return TranslateAsync(element, length, LayoutDirection.Vertical, -translationY);
+        }
 
-            // TODO: need to save this operation
-            
+        static Task TranslateAsync(VisualElement element, uint length, LayoutDirection direction, double value)
+        {
+            HERE: move the SetLayoutOperaiton onto the LayoutOPeration class
+
+            var operation = new LayoutOperation(element, direction, value, CalculateAffectedElements(element));
+
+            Flyout.SetLayoutOperation(element, operation);
+
             return operation.TranslateToAsync(length);
         }
 

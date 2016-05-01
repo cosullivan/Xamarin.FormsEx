@@ -8,6 +8,13 @@ namespace Xamarin.FormsEx
 {
     internal class LayoutOperation
     {
+        internal static readonly BindableProperty LayoutOperationProperty =
+            BindableProperty.CreateAttached(
+                "LayoutOperation",
+                typeof(LayoutOperation),
+                typeof(LayoutOperation),
+                null);
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -15,11 +22,41 @@ namespace Xamarin.FormsEx
         /// <param name="direction">The direction that the layout should be performed in.</param>
         /// <param name="value">The value that the elements will be affected by in the layout direction.</param>
         /// <param name="otherElements">The list of other elements that are to be affected by the layout operation.</param>
-        internal LayoutOperation(VisualElement element, LayoutDirection direction, double value, IReadOnlyList<VisualElement> otherElements)
+        internal LayoutOperation(VisualElement element, LayoutDirection direction, double value, IEnumerable<VisualElement> otherElements)
         {
             Direction = direction;
             Value = value;
             Elements = new[] { element }.Union(otherElements).ToList();
+        }
+
+        /// <summary>
+        /// Returns the LayoutOperation that is currently applied to the bindable object.
+        /// </summary>
+        /// <param name="bindableObject">The instance to return the layout operation for.</param>
+        /// <returns>The layout operation that is assigned to the instance.</returns>
+        internal static LayoutOperation GetLayoutOperation(BindableObject bindableObject)
+        {
+            if (bindableObject == null)
+            {
+                throw new ArgumentNullException(nameof(bindableObject));
+            }
+
+            return bindableObject.GetValue(LayoutOperationProperty) as LayoutOperation;
+        }
+
+        /// <summary>
+        /// Sets the LayoutOperation that is being applied to the bindable object.
+        /// </summary>
+        /// <param name="bindableObject">The instance to set the value on.</param>
+        /// <param name="layoutOperation">The layout operation to set on the bindable object.</param>
+        internal static void SetLayoutOperation(BindableObject bindableObject, LayoutOperation layoutOperation)
+        {
+            if (bindableObject == null)
+            {
+                throw new ArgumentNullException(nameof(bindableObject));
+            }
+
+            bindableObject.SetValue(LayoutOperationProperty, layoutOperation);
         }
 
         /// <summary>
