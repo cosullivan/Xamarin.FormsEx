@@ -36,35 +36,13 @@
             FormsEx:Flyout.PinTo="{x:Reference _bottom2}"
             RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=1}"
             RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=1}"
-            RelativeLayout.HeightConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=0.4}"
             RowSpacing="0">
             <Grid.RowDefinitions>
                 <RowDefinition
-                    Height="2" />
+                    Height="Auto" />
                 <RowDefinition
-                    Height="2" />
-                <RowDefinition
-                    Height="2" />
-                <RowDefinition
-                    Height="2" />
-                <RowDefinition
-                    Height="*" />
+                    Height="Auto" />
             </Grid.RowDefinitions>
-            <BoxView
-                Grid.Row="0"
-                BackgroundColor="#11000000" />
-            <BoxView
-                Grid.Row="1"
-                BackgroundColor="#33000000" />
-            <BoxView
-                Grid.Row="2"
-                BackgroundColor="#55000000" />
-            <BoxView
-                Grid.Row="3"
-                BackgroundColor="#77000000" />
-            <BoxView
-                Grid.Row="4"
-                BackgroundColor="#F6F6F6" />
         </Grid>
 
         <StackLayout

@@ -8,10 +8,10 @@ namespace Xamarin.FormsEx
 {
     internal class LayoutOperation
     {
-        internal static readonly BindableProperty LayoutOperationProperty =
-            BindableProperty.CreateAttached(
-                "LayoutOperation",
-                typeof(LayoutOperation),
+        static readonly BindablePropertyKey LayoutOperationsPropertyKey =
+            BindableProperty.CreateAttachedReadOnly(
+                "LayoutOperations",
+                typeof(Stack<LayoutOperation>),
                 typeof(LayoutOperation),
                 null);
 
@@ -24,9 +24,10 @@ namespace Xamarin.FormsEx
         /// <param name="otherElements">The list of other elements that are to be affected by the layout operation.</param>
         internal LayoutOperation(VisualElement element, LayoutDirection direction, double value, IEnumerable<VisualElement> otherElements)
         {
+            RootElement = element;
             Direction = direction;
             Value = value;
-            Elements = new[] { element }.Union(otherElements).ToList();
+            OtherElements = otherElements.ToList();
         }
 
         /// <summary>
@@ -34,49 +35,69 @@ namespace Xamarin.FormsEx
         /// </summary>
         /// <param name="bindableObject">The instance to return the layout operation for.</param>
         /// <returns>The layout operation that is assigned to the instance.</returns>
-        internal static LayoutOperation GetLayoutOperation(BindableObject bindableObject)
+        internal static Stack<LayoutOperation> GetLayoutOperations(BindableObject bindableObject)
         {
             if (bindableObject == null)
             {
                 throw new ArgumentNullException(nameof(bindableObject));
             }
 
-            return bindableObject.GetValue(LayoutOperationProperty) as LayoutOperation;
-        }
+            var operations = bindableObject.GetValue(LayoutOperationsPropertyKey.BindableProperty) as Stack<LayoutOperation>;
 
-        /// <summary>
-        /// Sets the LayoutOperation that is being applied to the bindable object.
-        /// </summary>
-        /// <param name="bindableObject">The instance to set the value on.</param>
-        /// <param name="layoutOperation">The layout operation to set on the bindable object.</param>
-        internal static void SetLayoutOperation(BindableObject bindableObject, LayoutOperation layoutOperation)
-        {
-            if (bindableObject == null)
+            if (operations == null)
             {
-                throw new ArgumentNullException(nameof(bindableObject));
+                operations = new Stack<LayoutOperation>();
+                bindableObject.SetValue(LayoutOperationsPropertyKey, operations);
             }
 
-            bindableObject.SetValue(LayoutOperationProperty, layoutOperation);
+            return operations;
         }
 
+        ///// <summary>
+        ///// Create the translation point for the current operation.
+        ///// </summary>
+        ///// <returns>The point that represents the translation point for the operation.</returns>
+        //Point CreateTranslationPoint()
+        //{
+        //    var translationX = 0.0;
+        //    var translationY = 0.0;
+
+        //    switch (Direction)
+        //    {
+        //        case LayoutDirection.Horizontal:
+        //            translationX += Value;
+        //            break;
+
+        //        case LayoutDirection.Vertical:
+        //            translationY += Value;
+        //            break;
+        //    }
+
+        //    return new Point(translationX, translationY);
+        //}
+
         /// <summary>
-        /// Create the translation point for the current operation.
+        /// Calculate the translation point for the given element.
         /// </summary>
-        /// <returns>The point that represents the translation point for the operation.</returns>
-        Point CreateTranslationPoint()
+        /// <param name="element">The element to calculation the translation point for.</param>
+        /// <returns>The point at which to translate the element to.</returns>
+        static Point CalculateTranslationPoint(VisualElement element)
         {
             var translationX = 0.0;
             var translationY = 0.0;
 
-            switch (Direction)
+            foreach (var operation in GetLayoutOperations(element))
             {
-                case LayoutDirection.Horizontal:
-                    translationX += Value;
-                    break;
+                switch (operation.Direction)
+                {
+                    case LayoutDirection.Horizontal:
+                        translationX += operation.Value;
+                        break;
 
-                case LayoutDirection.Vertical:
-                    translationY += Value;
-                    break;
+                    case LayoutDirection.Vertical:
+                        translationY += operation.Value;
+                        break;
+                }
             }
 
             return new Point(translationX, translationY);
@@ -87,9 +108,9 @@ namespace Xamarin.FormsEx
         /// </summary>
         /// <param name="element">The element to test whether it can be translated.</param>
         /// <returns>true if the root can be translated with the operation, false if not.</returns>
-        bool CanTranslate(VisualElement element)
+        static bool CanTranslate(VisualElement element)
         {
-            var point = CreateTranslationPoint();
+            var point = CalculateTranslationPoint(element);
 
             return Math.Abs(element.TranslationX - point.X) > Double.Epsilon || Math.Abs(element.TranslationY - point.Y) > Double.Epsilon;
         }
@@ -106,9 +127,9 @@ namespace Xamarin.FormsEx
                 return Task.FromResult(0);
             }
 
-            var point = CreateTranslationPoint();
+            var point = CalculateTranslationPoint(RootElement);
 
-            var tasks = Elements.Select(element => TranslateToAsync(element, point.X, point.Y, length));
+            var tasks = new[] { RootElement }.Union(OtherElements).Select(element => TranslateToAsync(element, point.X, point.Y, length));
 
             return Task.WhenAll(tasks);
         }
@@ -121,7 +142,7 @@ namespace Xamarin.FormsEx
         /// <param name="translationY">The translation amount to animate on the Y scale.</param>
         /// <param name="length">The speed in which to perform the animation for the flyout.</param>
         /// <returns>A task which asynchronously performs the operation.</returns>
-        internal static Task TranslateToAsync(VisualElement element, double translationX, double translationY, uint length)
+        static Task TranslateToAsync(VisualElement element, double translationX, double translationY, uint length)
         {
             if (Math.Abs(element.TranslationX - translationX) < Double.Epsilon && Math.Abs(element.TranslationY - translationY) < Double.Epsilon)
             {
@@ -140,6 +161,11 @@ namespace Xamarin.FormsEx
         }
 
         /// <summary>
+        /// Returns the root element that caused the operation.
+        /// </summary>
+        public VisualElement RootElement { get; }
+
+        /// <summary>
         /// The direction that the layout operation was performed in.
         /// </summary>
         public LayoutDirection Direction { get; }
@@ -152,14 +178,6 @@ namespace Xamarin.FormsEx
         /// <summary>
         /// The list of elements that were affected during this operation.
         /// </summary>
-        public IReadOnlyList<VisualElement> Elements { get; }
-
-        /// <summary>
-        /// Returns the root element that caused the operation.
-        /// </summary>
-        public VisualElement RootElement
-        {
-            get { return Elements[0]; }
-        }
+        public IReadOnlyList<VisualElement> OtherElements { get; }
     }
 }

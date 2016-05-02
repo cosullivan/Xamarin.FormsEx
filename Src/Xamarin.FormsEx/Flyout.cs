@@ -37,13 +37,6 @@ namespace Xamarin.FormsEx
 
         public static readonly BindableProperty PinnedProperty = PinnedPropertyKey.BindableProperty;
 
-        //static readonly BindablePropertyKey LayoutOperationPropertyKey =
-        //    BindableProperty.CreateAttachedReadOnly(
-        //        "LayoutOperation",
-        //        typeof (LayoutOperation),
-        //        typeof (Flyout),
-        //        null);
-
         /// <summary>
         /// Called when the PinTo value changes.
         /// </summary>
@@ -138,36 +131,6 @@ namespace Xamarin.FormsEx
 
             return (VisualElement) bindableObject.GetValue(PinToProperty);
         }
-
-        ///// <summary>
-        ///// Gets the current layout operation that has been applied to the element.
-        ///// </summary>
-        ///// <param name="bindableObject">The bindable object to get the pin target for.</param>
-        ///// <returns>The layout operation that is currently applied to the given element..</returns>
-        //internal static LayoutOperation GetLayoutOperation(BindableObject bindableObject)
-        //{
-        //    if (bindableObject == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(bindableObject));
-        //    }
-
-        //    return bindableObject.GetValue(LayoutOperationPropertyKey.BindableProperty) as LayoutOperation;
-        //}
-
-        ///// <summary>
-        ///// Sets the layout operation for the given element.
-        ///// </summary>
-        ///// <param name="bindableObject">The bindable object to set the layout operation on.</param>
-        ///// <param name="layoutOperation">The layout operation to set on the element.</param>
-        //internal static void SetLayoutOperation(BindableObject bindableObject, LayoutOperation layoutOperation)
-        //{
-        //    if (bindableObject == null)
-        //    {
-        //        throw new ArgumentNullException(nameof(bindableObject));
-        //    }
-
-        //    bindableObject.SetValue(LayoutOperationPropertyKey, layoutOperation);
-        //}
     }
 
     public static class FlyoutExtensions
@@ -280,18 +243,26 @@ namespace Xamarin.FormsEx
         /// <returns>A task which asynchronously performs the operation.</returns>
         static Task AnimateUpAsync(View layout, VisualElement element, uint length)
         {
-            var translationY = element.Bounds.Height - (layout.Bounds.Bottom - element.Bounds.Y);
+            //var translationY = element.Bounds.Height - (layout.Bounds.Bottom - element.Bounds.Y);
+            //var translationY = (element.Bounds.Height - (layout.Bounds.Bottom - element.Bounds.Y)) + element.TranslationY;
+            //var translationY = element.Bounds.Height - (layout.Bounds.Bottom - element.Bounds.Y - element.TranslationY);
+            var translationY = 100;
 
             return TranslateAsync(element, length, LayoutDirection.Vertical, -translationY);
         }
 
+        /// <summary>
+        /// Apply the layout operation to the given element.
+        /// </summary>
+        /// <param name="element">The element to apply the translation to.</param>
+        /// <param name="length">The speed of the animation.</param>
+        /// <param name="direction">The direction in which to perform the operation.</param>
+        /// <param name="value">The amount to which to apply the translation.</param>
+        /// <returns>A task which asynchronously performs the operation.</returns>
         static Task TranslateAsync(VisualElement element, uint length, LayoutDirection direction, double value)
         {
-            HERE: move the SetLayoutOperaiton onto the LayoutOPeration class
-
             var operation = new LayoutOperation(element, direction, value, CalculateAffectedElements(element));
-
-            Flyout.SetLayoutOperation(element, operation);
+            LayoutOperation.GetLayoutOperations(element).Push(operation);
 
             return operation.TranslateToAsync(length);
         }
@@ -324,7 +295,19 @@ namespace Xamarin.FormsEx
                 throw new ArgumentNullException(nameof(element));
             }
 
-            return Task.FromResult(0);
+            var layoutOperations = LayoutOperation.GetLayoutOperations(element);
+
+            if (layoutOperations.Count == 0)
+            {
+                return Task.FromResult(0);
+            }
+
+            var layoutOperation = layoutOperations.Pop();
+
+            // create an operation that is the reverse of the one that was applied.
+            layoutOperation = new LayoutOperation(layoutOperation.RootElement, layoutOperation.Direction, -layoutOperation.Value, layoutOperation.OtherElements);
+
+            return layoutOperation.TranslateToAsync(length);
         }
 
         /// <summary>

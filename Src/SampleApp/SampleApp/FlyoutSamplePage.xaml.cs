@@ -14,52 +14,52 @@ namespace SampleApp
 
         async void OnButtonClicked(object sender, EventArgs e)
         {
-            await _top.FlyoutAsync();
-            await Task.Delay(500);
+            //await _top.FlyoutAsync();
+            //await Task.Delay(500);
 
-            await _left.FlyoutAsync();
-            await Task.Delay(500);
+            //await _left.FlyoutAsync();
+            //await Task.Delay(500);
 
-            await _bottom.FlyoutAsync();
-            await Task.Delay(500);
+            //await _bottom.FlyoutAsync();
+            //await Task.Delay(500);
 
-            await AnimateRightFlyout();
-            await Task.Delay(500);
+            //await AnimateRightFlyout();
+            //await Task.Delay(500);
 
-            await _bottom.BackAsync();
-            await Task.Delay(500);
+            //await _bottom.CloseAsync();
+            //await Task.Delay(500);
 
-            await _left.BackAsync();
-            await Task.Delay(500);
+            //await _left.CloseAsync();
+            //await Task.Delay(500);
 
-            await _top.BackAsync();
-            await Task.Delay(500);
+            //await _top.CloseAsync();
+            //await Task.Delay(500);
         }
 
         async Task AnimateRightFlyout()
         {
-            var width = _right.WidthRequest;
+            //var width = _right.WidthRequest;
 
-            await _right.FlyoutAsync();
-            await Task.Delay(500);
+            //await _right.FlyoutAsync();
+            //await Task.Delay(500);
 
-            _right.WidthRequest += 100;
-            await _right.FlyoutAsync();
-            await Task.Delay(500);
+            //_right.WidthRequest += 100;
+            //await _right.FlyoutAsync();
+            //await Task.Delay(500);
 
-            _right.WidthRequest += 50;
-            await _right.FlyoutAsync();
-            await Task.Delay(500);
+            //_right.WidthRequest += 50;
+            //await _right.FlyoutAsync();
+            //await Task.Delay(500);
 
-            await _right.BackAsync();
-            await Task.Delay(500);
+            //await _right.BackAsync();
+            //await Task.Delay(500);
 
-            await _right.BackAsync();
-            await Task.Delay(500);
+            //await _right.BackAsync();
+            //await Task.Delay(500);
 
-            await _right.BackAsync();
+            //await _right.BackAsync();
 
-            _right.WidthRequest = width;
+            //_right.WidthRequest = width;
         }
     }
 }
