@@ -302,11 +302,16 @@ namespace Xamarin.FormsEx
         /// <returns>A task which asynchronously performs the operation.</returns>
         static Task TranslateAsync(VisualElement element, uint length, LayoutDirection direction, double value)
         {
-            var operation = new LayoutOperation(element, direction, value, CalculateAffectedElements(element));
+            var elements = new[] { element }.Union(CalculateAffectedElements(element)).ToList();
 
-            LayoutOperation.Push(operation);
+            var tasks = elements.Select(e =>
+            {
+                var operation = new LayoutOperation(e, direction, value);
 
-            return operation.TranslateToAsync(length);
+                return operation.TranslateToAsync(length);
+            });
+
+            return Task.WhenAll(tasks);
         }
 
         /// <summary>
@@ -332,22 +337,22 @@ namespace Xamarin.FormsEx
         /// <returns>A task which asynchronously performs the operation.</returns>
         public static Task BackAsync(this VisualElement element, uint length)
         {
-            if (element == null)
-            {
-                throw new ArgumentNullException(nameof(element));
-            }
+            //if (element == null)
+            //{
+            //    throw new ArgumentNullException(nameof(element));
+            //}
 
-            var operation = LayoutOperation.Pop(element);
+            //var operation = LayoutOperation.Pop(element);
 
-            if (operation == null)
-            {
-                return Task.FromResult(0);
-            }
+            //if (operation == null)
+            //{
+            //    return Task.FromResult(0);
+            //}
 
-            // create an operation that is the reverse of the one that was applied.
-            operation = new LayoutOperation(operation.RootElement, operation.Direction, -operation.Value, operation.OtherElements);
+            //// create an operation that is the reverse of the one that was applied.
+            //operation = new LayoutOperation(operation.RootElement, operation.Direction, -operation.Value, operation.OtherElements);
 
-            return operation.TranslateToAsync(length);
+            //return operation.TranslateToAsync(length);
         }
 
         /// <summary>

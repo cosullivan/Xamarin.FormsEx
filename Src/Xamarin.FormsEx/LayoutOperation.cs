@@ -21,13 +21,11 @@ namespace Xamarin.FormsEx
         /// <param name="element">The element that caused the layout operation.</param>
         /// <param name="direction">The direction that the layout should be performed in.</param>
         /// <param name="value">The value that the elements will be affected by in the layout direction.</param>
-        /// <param name="otherElements">The list of other elements that are to be affected by the layout operation.</param>
-        internal LayoutOperation(VisualElement element, LayoutDirection direction, double value, IEnumerable<VisualElement> otherElements)
+        internal LayoutOperation(VisualElement element, LayoutDirection direction, double value)
         {
             RootElement = element;
             Direction = direction;
             Value = value;
-            OtherElements = otherElements.ToList();
         }
 
         /// <summary>
@@ -77,7 +75,7 @@ namespace Xamarin.FormsEx
         /// Push an operation onto the stack.
         /// </summary>
         /// <param name="operation">The operation to push onto the stack.</param>
-        internal static void Push(LayoutOperation operation)
+        static void Push(LayoutOperation operation)
         {
             if (operation == null)
             {
@@ -116,16 +114,15 @@ namespace Xamarin.FormsEx
         }
 
         /// <summary>
-        /// Calculate the translation point for the given element.
+        /// Calculate the translation point for the current element.
         /// </summary>
-        /// <param name="element">The element to calculation the translation point for.</param>
         /// <returns>The point at which to translate the element to.</returns>
-        static Point CalculateTranslationPoint(VisualElement element)
+        Point CalculateTranslationPoint()
         {
             var translationX = 0.0;
             var translationY = 0.0;
 
-            foreach (var operation in GetLayoutOperations(GetContainer(element)).Where(op => op.ContainsElement(element)))
+            foreach (var operation in GetLayoutOperations(GetContainer(RootElement)).Where(op => op.RootElement == RootElement))
             {
                 switch (operation.Direction)
                 {
@@ -139,29 +136,29 @@ namespace Xamarin.FormsEx
                 }
             }
 
-            return new Point(translationX, translationY);
-        }
+            switch (Direction)
+            {
+                case LayoutDirection.Horizontal:
+                    translationX += Value;
+                    break;
 
-        /// <summary>
-        /// Returns a value indicating whether or not the current operation contains the given element.
-        /// </summary>
-        /// <param name="element">The element to determine if it exists in the current operation.</param>
-        /// <returns>true if the element exists in the operation, false if not.</returns>
-        bool ContainsElement(VisualElement element)
-        {
-            return RootElement == element || OtherElements.Contains(element);
+                case LayoutDirection.Vertical:
+                    translationY += Value;
+                    break;
+            }
+
+            return new Point(translationX, translationY);
         }
 
         /// <summary>
         /// Returns a value indicating whether theroot element can be translated with the current operation.
         /// </summary>
-        /// <param name="element">The element to test whether it can be translated.</param>
         /// <returns>true if the root can be translated with the operation, false if not.</returns>
-        static bool CanTranslate(VisualElement element)
+        bool CanTranslate()
         {
-            var point = CalculateTranslationPoint(element);
+            var point = CalculateTranslationPoint();
 
-            return Math.Abs(element.TranslationX - point.X) > Double.Epsilon || Math.Abs(element.TranslationY - point.Y) > Double.Epsilon;
+            return Math.Abs(RootElement.TranslationX - point.X) > Double.Epsilon || Math.Abs(RootElement.TranslationY - point.Y) > Double.Epsilon;
         }
 
         /// <summary>
@@ -171,19 +168,14 @@ namespace Xamarin.FormsEx
         /// <returns>A task which asynchronously performs the operation.</returns>
         internal Task TranslateToAsync(uint length)
         {
-            if (CanTranslate(RootElement) == false)
+            if (CanTranslate() == false)
             {
                 return Task.FromResult(0);
             }
 
-            var tasks = new[] { RootElement }.Union(OtherElements).Select(element =>
-            {
-                var point = CalculateTranslationPoint(element);
+            var point = CalculateTranslationPoint();
 
-                return TranslateToAsync(element, point.X, point.Y, length);
-            });
-
-            return Task.WhenAll(tasks);
+            return TranslateToAsync(RootElement, point.X, point.Y, length).ContinueWith(t => Push(this));
         }
 
         /// <summary>
@@ -223,13 +215,8 @@ namespace Xamarin.FormsEx
         public LayoutDirection Direction { get; }
 
         /// <summary>
-        /// The value that the elements were affected by in the layout direction.
+        /// The value that the element was affected by in the layout direction.
         /// </summary>
         public double Value { get; }
-
-        /// <summary>
-        /// The list of elements that were affected during this operation.
-        /// </summary>
-        public IReadOnlyList<VisualElement> OtherElements { get; }
     }
 }
