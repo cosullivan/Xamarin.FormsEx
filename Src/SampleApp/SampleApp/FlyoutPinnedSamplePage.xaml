@@ -30,28 +30,21 @@
             HeightRequest="50"
             BackgroundColor="Red" />
 
-        <Grid
+        <StackLayout
             x:Name="_bottom1"
             FormsEx:Flyout.Position="Bottom"
             FormsEx:Flyout.PinTo="{x:Reference _bottom2}"
             RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=1}"
             RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=1}"
-            RowSpacing="0">
-            <Grid.RowDefinitions>
-                <RowDefinition
-                    Height="Auto" />
-                <RowDefinition
-                    Height="Auto" />
-            </Grid.RowDefinitions>
-        </Grid>
+            Spacing="0">
+        </StackLayout>
 
         <StackLayout
             x:Name="_bottom2"
             FormsEx:Flyout.Position="Bottom"
             RelativeLayout.YConstraint="{ConstraintExpression Type=RelativeToParent, Property=Height, Factor=1}"
             RelativeLayout.WidthConstraint="{ConstraintExpression Type=RelativeToParent, Property=Width, Factor=1}"
-            HeightRequest="100"
-            BackgroundColor="Red">
+            Spacing="0">
         </StackLayout>
 
     </RelativeLayout>

@@ -11,7 +11,7 @@ namespace Xamarin.FormsEx
         static readonly BindablePropertyKey LayoutOperationsPropertyKey =
             BindableProperty.CreateAttachedReadOnly(
                 "LayoutOperations",
-                typeof(Stack<LayoutOperation>),
+                typeof(List<LayoutOperation>),
                 typeof(LayoutOperation),
                 null);
 
@@ -31,50 +31,89 @@ namespace Xamarin.FormsEx
         }
 
         /// <summary>
-        /// Returns the LayoutOperation that is currently applied to the bindable object.
+        /// Gets the relative layout that is to be used as the container.
         /// </summary>
-        /// <param name="bindableObject">The instance to return the layout operation for.</param>
-        /// <returns>The layout operation that is assigned to the instance.</returns>
-        internal static Stack<LayoutOperation> GetLayoutOperations(BindableObject bindableObject)
+        /// <param name="element">The element to get the parent layout for.</param>
+        /// <returns>The relative layout that is the parent of the given element.</returns>
+        internal static RelativeLayout GetContainer(Element element)
         {
-            if (bindableObject == null)
+            if (element == null)
             {
-                throw new ArgumentNullException(nameof(bindableObject));
+                throw new InvalidOperationException("Can not find the parent layout for the given element.");
             }
 
-            var operations = bindableObject.GetValue(LayoutOperationsPropertyKey.BindableProperty) as Stack<LayoutOperation>;
+            if (element.Parent is RelativeLayout)
+            {
+                return (RelativeLayout)element.Parent;
+            }
+
+            return GetContainer(element.Parent);
+        }
+
+        /// <summary>
+        /// Returns the LayoutOperations that is currently applied to the bindable object.
+        /// </summary>
+        /// <param name="container">The instance to return the layout operation for.</param>
+        /// <returns>The layout operation that is assigned to the instance.</returns>
+        static List<LayoutOperation> GetLayoutOperations(RelativeLayout container)
+        {
+            if (container == null)
+            {
+                throw new ArgumentNullException(nameof(container));
+            }
+
+            var operations = container.GetValue(LayoutOperationsPropertyKey.BindableProperty) as List<LayoutOperation>;
 
             if (operations == null)
             {
-                operations = new Stack<LayoutOperation>();
-                bindableObject.SetValue(LayoutOperationsPropertyKey, operations);
+                operations = new List<LayoutOperation>();
+                container.SetValue(LayoutOperationsPropertyKey, operations);
             }
 
             return operations;
         }
 
-        ///// <summary>
-        ///// Create the translation point for the current operation.
-        ///// </summary>
-        ///// <returns>The point that represents the translation point for the operation.</returns>
-        //Point CreateTranslationPoint()
-        //{
-        //    var translationX = 0.0;
-        //    var translationY = 0.0;
+        /// <summary>
+        /// Push an operation onto the stack.
+        /// </summary>
+        /// <param name="operation">The operation to push onto the stack.</param>
+        internal static void Push(LayoutOperation operation)
+        {
+            if (operation == null)
+            {
+                throw new ArgumentNullException(nameof(operation));
+            }
 
-        //    switch (Direction)
-        //    {
-        //        case LayoutDirection.Horizontal:
-        //            translationX += Value;
-        //            break;
+            GetLayoutOperations(GetContainer(operation.RootElement)).Add(operation);
+        }
 
-        //        case LayoutDirection.Vertical:
-        //            translationY += Value;
-        //            break;
-        //    }
+        /// <summary>
+        /// Push an operation onto the stack.
+        /// </summary>
+        /// <param name="element">The element to pop an operation for.</param>
+        internal static LayoutOperation Pop(VisualElement element)
+        {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
 
-        //    return new Point(translationX, translationY);
-        //}
+            var operations = GetLayoutOperations(GetContainer(element));
+
+            for (var i = operations.Count - 1; i >= 0; i--)
+            {
+                if (operations[i].RootElement == element)
+                {
+                    var operation = operations[i];
+
+                    operations.RemoveAt(i);
+
+                    return operation;
+                }
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Calculate the translation point for the given element.
@@ -86,7 +125,7 @@ namespace Xamarin.FormsEx
             var translationX = 0.0;
             var translationY = 0.0;
 
-            foreach (var operation in GetLayoutOperations(element))
+            foreach (var operation in GetLayoutOperations(GetContainer(element)).Where(op => op.ContainsElement(element)))
             {
                 switch (operation.Direction)
                 {
@@ -101,6 +140,16 @@ namespace Xamarin.FormsEx
             }
 
             return new Point(translationX, translationY);
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether or not the current operation contains the given element.
+        /// </summary>
+        /// <param name="element">The element to determine if it exists in the current operation.</param>
+        /// <returns>true if the element exists in the operation, false if not.</returns>
+        bool ContainsElement(VisualElement element)
+        {
+            return RootElement == element || OtherElements.Contains(element);
         }
 
         /// <summary>
@@ -127,9 +176,12 @@ namespace Xamarin.FormsEx
                 return Task.FromResult(0);
             }
 
-            var point = CalculateTranslationPoint(RootElement);
+            var tasks = new[] { RootElement }.Union(OtherElements).Select(element =>
+            {
+                var point = CalculateTranslationPoint(element);
 
-            var tasks = new[] { RootElement }.Union(OtherElements).Select(element => TranslateToAsync(element, point.X, point.Y, length));
+                return TranslateToAsync(element, point.X, point.Y, length);
+            });
 
             return Task.WhenAll(tasks);
         }
@@ -151,11 +203,11 @@ namespace Xamarin.FormsEx
 
             if (length > 0)
             {
-                return element.TranslateTo(element.TranslationX + translationX, element.TranslationY + translationY, length, Easing.CubicIn);
+                return element.TranslateTo(translationX, translationY, length, Easing.CubicIn);
             }
 
-            element.TranslationX = element.TranslationX + translationX;
-            element.TranslationY = element.TranslationY + translationY;
+            element.TranslationX = translationX;
+            element.TranslationY = translationY;
 
             return Task.FromResult(0);
         }
