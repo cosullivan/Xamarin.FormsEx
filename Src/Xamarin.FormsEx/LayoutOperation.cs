@@ -75,7 +75,7 @@ namespace Xamarin.FormsEx
         /// Push an operation onto the stack.
         /// </summary>
         /// <param name="operation">The operation to push onto the stack.</param>
-        static void Push(LayoutOperation operation)
+        internal static void Push(LayoutOperation operation)
         {
             if (operation == null)
             {
@@ -116,13 +116,14 @@ namespace Xamarin.FormsEx
         /// <summary>
         /// Calculate the translation point for the current element.
         /// </summary>
+        /// <param name="element">The element to calculate the translation point for.</param>
         /// <returns>The point at which to translate the element to.</returns>
-        Point CalculateTranslationPoint()
+        static Point CalculateTranslationPoint(VisualElement element)
         {
             var translationX = 0.0;
             var translationY = 0.0;
 
-            foreach (var operation in GetLayoutOperations(GetContainer(RootElement)).Where(op => op.RootElement == RootElement))
+            foreach (var operation in GetLayoutOperations(GetContainer(element)).Where(op => op.RootElement == element))
             {
                 switch (operation.Direction)
                 {
@@ -136,46 +137,37 @@ namespace Xamarin.FormsEx
                 }
             }
 
-            switch (Direction)
-            {
-                case LayoutDirection.Horizontal:
-                    translationX += Value;
-                    break;
-
-                case LayoutDirection.Vertical:
-                    translationY += Value;
-                    break;
-            }
-
             return new Point(translationX, translationY);
         }
 
         /// <summary>
         /// Returns a value indicating whether theroot element can be translated with the current operation.
         /// </summary>
+        /// <param name="element">The element to calculate the translation point for.</param>
         /// <returns>true if the root can be translated with the operation, false if not.</returns>
-        bool CanTranslate()
+        static bool CanTranslate(VisualElement element)
         {
-            var point = CalculateTranslationPoint();
+            var point = CalculateTranslationPoint(element);
 
-            return Math.Abs(RootElement.TranslationX - point.X) > Double.Epsilon || Math.Abs(RootElement.TranslationY - point.Y) > Double.Epsilon;
+            return Math.Abs(element.TranslationX - point.X) > Double.Epsilon || Math.Abs(element.TranslationY - point.Y) > Double.Epsilon;
         }
 
         /// <summary>
-        /// Perform the translation for the operation.
+        /// Perform the translation for the element according to the operations that have been applied.
         /// </summary>
+        /// <param name="element">The element to translate.</param>
         /// <param name="length">The speed of the translation.</param>
         /// <returns>A task which asynchronously performs the operation.</returns>
-        internal Task TranslateToAsync(uint length)
+        internal static Task TranslateAsync(VisualElement element, uint length)
         {
-            if (CanTranslate() == false)
+            if (CanTranslate(element) == false)
             {
                 return Task.FromResult(0);
             }
 
-            var point = CalculateTranslationPoint();
+            var point = CalculateTranslationPoint(element);
 
-            return TranslateToAsync(RootElement, point.X, point.Y, length).ContinueWith(t => Push(this));
+            return TranslateToAsync(element, point.X, point.Y, length);
         }
 
         /// <summary>

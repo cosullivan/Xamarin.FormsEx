@@ -135,26 +135,6 @@ namespace Xamarin.FormsEx
 
     public static class FlyoutExtensions
     {
-        ///// <summary>
-        ///// Gets the relative layout that the element is contained within.
-        ///// </summary>
-        ///// <param name="element">The element to get the parent layout for.</param>
-        ///// <returns>The relative layout that is the parent of the given element.</returns>
-        //static RelativeLayout GetLayout(Element element)
-        //{
-        //    if (element == null)
-        //    {
-        //        throw new InvalidOperationException("Can not find the parent layout for the given element.");
-        //    }
-
-        //    if (element.Parent is RelativeLayout)
-        //    {
-        //        return (RelativeLayout)element.Parent;
-        //    }
-
-        //    return GetLayout(element.Parent);
-        //}
-
         /// <summary>
         /// Perform the flyout for the element.
         /// </summary>
@@ -302,13 +282,18 @@ namespace Xamarin.FormsEx
         /// <returns>A task which asynchronously performs the operation.</returns>
         static Task TranslateAsync(VisualElement element, uint length, LayoutDirection direction, double value)
         {
+            if (Math.Abs(value) < Double.Epsilon)
+            {
+                return Task.FromResult(0);
+            }
+
             var elements = new[] { element }.Union(CalculateAffectedElements(element)).ToList();
 
             var tasks = elements.Select(e =>
             {
-                var operation = new LayoutOperation(e, direction, value);
+                LayoutOperation.Push(new LayoutOperation(e, direction, value));
 
-                return operation.TranslateToAsync(length);
+                return LayoutOperation.TranslateAsync(e, length);
             });
 
             return Task.WhenAll(tasks);
@@ -337,22 +322,16 @@ namespace Xamarin.FormsEx
         /// <returns>A task which asynchronously performs the operation.</returns>
         public static Task BackAsync(this VisualElement element, uint length)
         {
-            //if (element == null)
-            //{
-            //    throw new ArgumentNullException(nameof(element));
-            //}
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
 
-            //var operation = LayoutOperation.Pop(element);
+            LayoutOperation.Pop(element);
 
-            //if (operation == null)
-            //{
-            //    return Task.FromResult(0);
-            //}
+            HERE: how to handle batches??
 
-            //// create an operation that is the reverse of the one that was applied.
-            //operation = new LayoutOperation(operation.RootElement, operation.Direction, -operation.Value, operation.OtherElements);
-
-            //return operation.TranslateToAsync(length);
+            return LayoutOperation.TranslateAsync(element, length);
         }
 
         /// <summary>
