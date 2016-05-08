@@ -27,6 +27,18 @@ namespace SampleApp
                 _bottom1.Children.Add(new BoxView { HeightRequest = 75, BackgroundColor = Color.Red });
                 await _bottom1.FlyoutAsync();
 
+                //var view = new StackLayout { HeightRequest = 75, BackgroundColor = Color.Red };
+
+                //var label = new Label { Text = "1" };
+                //var button = new Button { Text = "Click" };
+                //button.Clicked += (o, args) => label.Text += "2";
+                
+                //view.Children.Add(label);
+                //view.Children.Add(button);
+
+                //_bottom1.Children.Add(view);
+                //await _bottom1.FlyoutAsync();
+                
                 return;
             }
 
@@ -80,6 +92,8 @@ namespace SampleApp
 
                 return;
             }
+            //await _bottom1.CloseFlyoutAsync();
+            //await _bottom2.CloseFlyoutAsync();
         }
     }
 }

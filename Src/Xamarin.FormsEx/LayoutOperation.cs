@@ -19,11 +19,13 @@ namespace Xamarin.FormsEx
         /// Constructor.
         /// </summary>
         /// <param name="element">The element that caused the layout operation.</param>
+        /// <param name="other">The list of other elements that were affected by the operation.</param>
         /// <param name="direction">The direction that the layout should be performed in.</param>
         /// <param name="value">The value that the elements will be affected by in the layout direction.</param>
-        internal LayoutOperation(VisualElement element, LayoutDirection direction, double value)
+        internal LayoutOperation(VisualElement element, IEnumerable<VisualElement> other, LayoutDirection direction, double value)
         {
             RootElement = element;
+            Elements = new [] { element }.Union(other).ToList();
             Direction = direction;
             Value = value;
         }
@@ -65,6 +67,7 @@ namespace Xamarin.FormsEx
             if (operations == null)
             {
                 operations = new List<LayoutOperation>();
+
                 container.SetValue(LayoutOperationsPropertyKey, operations);
             }
 
@@ -75,7 +78,8 @@ namespace Xamarin.FormsEx
         /// Push an operation onto the stack.
         /// </summary>
         /// <param name="operation">The operation to push onto the stack.</param>
-        internal static void Push(LayoutOperation operation)
+        /// <returns>The layout operation that was pushed onto the stack.</returns>
+        internal static LayoutOperation Push(LayoutOperation operation)
         {
             if (operation == null)
             {
@@ -83,6 +87,8 @@ namespace Xamarin.FormsEx
             }
 
             GetLayoutOperations(GetContainer(operation.RootElement)).Add(operation);
+
+            return operation;
         }
 
         /// <summary>
@@ -123,7 +129,7 @@ namespace Xamarin.FormsEx
             var translationX = 0.0;
             var translationY = 0.0;
 
-            foreach (var operation in GetLayoutOperations(GetContainer(element)).Where(op => op.RootElement == element))
+            foreach (var operation in GetLayoutOperations(GetContainer(element)).Where(op => op.Elements.Contains(element)))
             {
                 switch (operation.Direction)
                 {
@@ -171,6 +177,17 @@ namespace Xamarin.FormsEx
         }
 
         /// <summary>
+        /// Perform the translation for the element according to the operations that have been applied.
+        /// </summary>
+        /// <param name="elements">The list of elements to perform a translation to according to the state defined in the stack.</param>
+        /// <param name="length">The speed of the translation.</param>
+        /// <returns>A task which asynchronously performs the operation.</returns>
+        internal static Task TranslateAsync(IEnumerable<VisualElement> elements, uint length)
+        {
+            return Task.WhenAll(elements.Select(element => TranslateAsync(element, length)));
+        }
+
+        /// <summary>
         /// Perform a flyout on a horizontal basis.
         /// </summary>
         /// <param name="element">The element to perform the flyout for.</param>
@@ -200,6 +217,11 @@ namespace Xamarin.FormsEx
         /// Returns the root element that caused the operation.
         /// </summary>
         public VisualElement RootElement { get; }
+
+        /// <summary>
+        /// Returns a list of all elements that exists for the operation.
+        /// </summary>
+        public IReadOnlyList<VisualElement> Elements;
 
         /// <summary>
         /// The direction that the layout operation was performed in.

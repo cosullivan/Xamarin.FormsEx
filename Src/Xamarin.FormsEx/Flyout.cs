@@ -287,16 +287,9 @@ namespace Xamarin.FormsEx
                 return Task.FromResult(0);
             }
 
-            var elements = new[] { element }.Union(CalculateAffectedElements(element)).ToList();
+            var operation = LayoutOperation.Push(new LayoutOperation(element, CalculateAffectedElements(element), direction, value));
 
-            var tasks = elements.Select(e =>
-            {
-                LayoutOperation.Push(new LayoutOperation(e, direction, value));
-
-                return LayoutOperation.TranslateAsync(e, length);
-            });
-
-            return Task.WhenAll(tasks);
+            return LayoutOperation.TranslateAsync(operation.Elements, length);
         }
 
         /// <summary>
@@ -327,11 +320,9 @@ namespace Xamarin.FormsEx
                 throw new ArgumentNullException(nameof(element));
             }
 
-            LayoutOperation.Pop(element);
+            var operation = LayoutOperation.Pop(element);
 
-            HERE: how to handle batches??
-
-            return LayoutOperation.TranslateAsync(element, length);
+            return LayoutOperation.TranslateAsync(operation.Elements, length);
         }
 
         /// <summary>
@@ -346,7 +337,7 @@ namespace Xamarin.FormsEx
                 throw new ArgumentNullException(nameof(element));
             }
 
-            return Task.FromResult(0);
+            return CloseFlyoutAsync(element, Flyout.Normal);
         }
 
         /// <summary>
@@ -362,7 +353,35 @@ namespace Xamarin.FormsEx
                 throw new ArgumentNullException(nameof(element));
             }
 
-            return Task.FromResult(0);
+            var elements = new HashSet<VisualElement>();
+
+            var operation = LayoutOperation.Pop(element);
+            while (operation != null)
+            {
+                foreach (var e in operation.Elements)
+                {
+                    elements.Add(e);
+                }
+
+                operation = LayoutOperation.Pop(element);
+            }
+
+            return LayoutOperation.TranslateAsync(elements, length);
+        }
+        
+        /// <summary>
+        /// Returns a value indicating whether or no the flyout is visible.
+        /// </summary>
+        /// <param name="element">The element to determine whether it is visible.</param>
+        /// <returns>true if the given element is visible, false if not.</returns>
+        public static bool IsFlyoutVisibile(this VisualElement element)
+        {
+            if (element == null)
+            {
+                throw new ArgumentNullException(nameof(element));
+            }
+
+            return Math.Abs(element.TranslationX) > Double.Epsilon || Math.Abs(element.TranslationY) > Double.Epsilon;
         }
     }
 }
